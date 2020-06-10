@@ -2,20 +2,20 @@
   <div class="content">
     <h1>Nova Ideia</h1>
 
-    <form action="">
+    <form action="/" method="POST" >
       <div class="input-wrapper">
         <label for="title">Título da Ideia</label>
-        <input type="text" name="title" />
+        <input type="text" name="title" required />
       </div>
 
       <div class="input-wrapper">
         <label for="category">Categoria</label>
-        <input type="text" name="category" />
+        <input type="text" name="category" required />
       </div>
 
       <div class="input-wrapper">
         <label for="image">Link da Imagem</label>
-        <input type="url" name="image" />
+        <input type="url" name="image" required />
       </div>
 
       <div class="input-wrapper">
@@ -25,7 +25,7 @@
 
       <div class="input-wrapper">
         <label for="link">Link da Ideia</label>
-        <input type="text" name="link" />
+        <input type="text" name="link" required />
       </div>
 
       <a href="#" onclick="onOff()">Voltar</a>

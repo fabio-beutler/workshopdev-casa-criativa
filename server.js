@@ -2,54 +2,13 @@
 const express = require("express");
 const server = express();
 
-const ideas = [
-  {
-    img: "https://image.flaticon.com/icons/svg/2729/2729007.svg",
-    title: "Cursos de Programação",
-    category: "Estudo",
-    description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae magnam voluptatem porro harum necessitatibus rerum",
-    url: "https://rocketseat.com.br"
-  },
-  {
-    img: "https://image.flaticon.com/icons/svg/2729/2729005.svg",
-    title: "Exercícios",
-    category: "Saúde",
-    description: "Lorem, ipsum dolor sit amet consectetur adipisicing elit.",
-    url: "https://rocketseat.com.br"
-  },
-  {
-    img: "https://image.flaticon.com/icons/svg/2729/2729027.svg",
-    title: "Meditação",
-    category: "Mentalidade",
-    description: "Lorem ipsum dolor, sit amet consectetur adipisicing elit.",
-    url: "https://rocketseat.com.br"
-  },
-  {
-    img: "https://image.flaticon.com/icons/svg/2729/2729032.svg",
-    title: "Karaokê",
-    category: "Diversão em Família",
-    description: "Lorem ipsum dolor, sit amet consectetur adipisicing elit.",
-    url: "https://rocketseat.com.br"
-  },
-  {
-    img: "https://image.flaticon.com/icons/svg/2729/2729038.svg",
-    title: "Pintura",
-    category: "Criatividade",
-    description: "Lorem ipsum dolor, sit amet consectetur adipisicing elit.",
-    url: "https://rocketseat.com.br"
-  },
-  {
-    img: "https://image.flaticon.com/icons/svg/2729/2729048.svg",
-    title: "Recortes",
-    category: "Criatividade",
-    description: "Lorem ipsum dolor, sit amet consectetur adipisicing elit.",
-    url: "https://rocketseat.com.br"
-  }
-];
+const db = require("./db");
 
 // Configurar aquivos estáticos (css, scripts, imagens)
 server.use(express.static("public"));
+
+// Habilitar uso do req.body
+server.use(express.urlencoded({ extended: true }));
 
 // Configuração do nunjucks
 const nunjucks = require("nunjucks");
@@ -60,22 +19,65 @@ nunjucks.configure("views", {
 
 // Criar uma rota e configurar o pedido do cliente para responder
 server.get("/", (req, res) => {
-  const reversedIdeas = [...ideas].reverse();
-
-  const lastIdeas = [];
-  for (idea of reversedIdeas) {
-    if (lastIdeas.length < 2) {
-      lastIdeas.push(idea);
+  db.all(`SELECT * FROM ideas`, function (err, rows) {
+    if (err) {
+      console.log(err);
+      return res.send("Erro no banco de dados!");
     }
-  }
 
-  return res.render("index.html", { ideas: lastIdeas });
+    const reversedIdeas = [...rows].reverse();
+
+    const lastIdeas = [];
+    for (idea of reversedIdeas) {
+      if (lastIdeas.length < 2) {
+        lastIdeas.push(idea);
+      }
+    }
+
+    return res.render("index.html", { ideas: lastIdeas });
+  });
 });
 
 server.get("/ideas", (req, res) => {
-  const reversedIdeas = [...ideas].reverse();
+  db.all(`SELECT * FROM ideas`, function (err, rows) {
+    if (err) {
+      console.log(err);
+      return res.send("Erro no banco de dados!");
+    }
 
-  return res.render("ideas.html", { ideas: reversedIdeas });
+    const reversedIdeas = [...rows].reverse();
+
+    return res.render("ideas.html", { ideas: reversedIdeas });
+  });
+});
+
+server.post("/", (req, res) => {
+  const query = `
+    INSERT INTO ideas(
+      image,
+      title,
+      category,
+      description,
+      link
+    ) VALUES(?,?,?,?,?);
+  `;
+
+  const values = [
+    req.body.image,
+    req.body.title,
+    req.body.category,
+    req.body.description,
+    req.body.link
+  ];
+
+  db.run(query, values, function (err) {
+    if (err) {
+      console.log(err);
+      return res.send("Erro no banco de dados!");
+    }
+
+    return res.redirect("/ideas");
+  });
 });
 
 // Ligar o servidor na porta 3000
